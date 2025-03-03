@@ -1,0 +1,16 @@
+{
+	"name": "flagster-js",
+	"version": "1.0.0",
+	"main": "index.js",
+	"author": "Maxime Le Duc <maximeld19@gmail.com>",
+	"license": "MIT",
+	"private": true,
+	"scripts": {
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"typescript": "^5.8.2",
+		"vitest": "^3.0.7"
+	}
+}
