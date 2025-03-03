@@ -1,4 +1,5 @@
-import { Config, Flagster, ILocalStorage } from "../src/flagster";
+import { Config, Flagster } from "../src/flagster";
+import { ILocalStorage } from "../src/localstorage/localstorage";
 
 export class MockLocalStorage implements ILocalStorage {
 	private savedFlags: Record<string, boolean> = {};

@@ -1,11 +1,5 @@
-export type IApi = {
-	getFlags: (environment: string) => Promise<Record<string, boolean>>;
-};
-
-export type ILocalStorage = {
-	save(flags: Record<string, boolean>): void;
-	get(): Record<string, boolean>;
-};
+import { IApi } from "./api/api";
+import { ILocalStorage } from "./localstorage/localstorage";
 
 export type Config = {
 	environment: string;
@@ -27,17 +21,8 @@ export class Flagster {
 
 	init(config: Config) {
 		this.config = config;
-
-		const loadedFromStorage = this.loadFromStorage();
-
-		if (!loadedFromStorage) {
-			this.changeFlags(config.defaultFlags || {});
-		}
-
-		this.api.getFlags(config.environment).then((flags) => {
-			this.changeFlags(flags);
-			this.localStorage.save(this.flags);
-		});
+		this.loadFromStorage();
+		this.loadFromApi();
 	}
 
 	private changeFlags(newFlags: Record<string, boolean>) {
@@ -48,15 +33,15 @@ export class Flagster {
 
 	private loadFromStorage() {
 		const savedFlags = this.localStorage.get();
-		const isLocalStorageEmpty = Object.keys(savedFlags).length === 0;
-
-		if (isLocalStorageEmpty) return false;
-
 		const defaultFlags = this.config!.defaultFlags || {};
-
 		this.changeFlags({ ...defaultFlags, ...savedFlags });
+	}
 
-		return true;
+	private loadFromApi() {
+		this.api.getFlags(this.config!.environment).then((flags) => {
+			this.changeFlags(flags);
+			this.localStorage.save(this.flags);
+		});
 	}
 
 	getflags() {

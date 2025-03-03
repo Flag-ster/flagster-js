@@ -2,6 +2,10 @@ import { FlagsterTester, MockLocalStorage } from "./flagster.tester";
 
 describe("Flagster", () => {
 	let tester: FlagsterTester;
+	const defaultFlags = {
+		flag1: false,
+		flag2: false,
+	};
 
 	beforeEach(() => {
 		tester = new FlagsterTester();
@@ -26,10 +30,7 @@ describe("Flagster", () => {
 	test("default flags is use before initialization", () => {
 		tester.initFlagster({
 			environment: "environemnt-id",
-			defaultFlags: {
-				flag1: false,
-				flag2: false,
-			},
+			defaultFlags,
 		});
 
 		expect(tester.getflags()).toEqual({
@@ -42,10 +43,7 @@ describe("Flagster", () => {
 		let changeCalled = false;
 		tester.initFlagster({
 			environment: "environemnt-id",
-			defaultFlags: {
-				flag1: false,
-				flag2: false,
-			},
+			defaultFlags,
 			onChange(oldFlags, newFlags) {
 				if (changeCalled) return;
 				expect(oldFlags).toEqual({});
@@ -64,17 +62,11 @@ describe("Flagster", () => {
 		let changeCalledTime = 0;
 		tester.initFlagster({
 			environment: "environemnt-id",
-			defaultFlags: {
-				flag1: false,
-				flag2: false,
-			},
+			defaultFlags,
 			onChange(oldFlags, newFlags) {
 				changeCalledTime++;
 				if (changeCalledTime === 1) return;
-				expect(oldFlags).toEqual({
-					flag1: false,
-					flag2: false,
-				});
+				expect(oldFlags).toEqual(defaultFlags);
 				expect(newFlags).toEqual({
 					flag1: false,
 					flag2: true,
@@ -110,10 +102,7 @@ describe("Flagster", () => {
 			)
 			.initFlagster({
 				environment: "environemnt-id",
-				defaultFlags: {
-					flag1: false,
-					flag2: false,
-				},
+				defaultFlags,
 			});
 
 		expect(tester.getflags()).toEqual({
@@ -133,10 +122,7 @@ describe("Flagster", () => {
 			)
 			.initFlagster({
 				environment: "environemnt-id",
-				defaultFlags: {
-					flag1: false,
-					flag2: false,
-				},
+				defaultFlags,
 				onChange(oldFlags, newFlags) {
 					if (onChangeCalled) return;
 					expect(oldFlags).toEqual({});

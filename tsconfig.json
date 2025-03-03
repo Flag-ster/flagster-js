@@ -1,11 +1,16 @@
 {
-  "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "types": ["vitest/globals"]
-  }
+    "compilerOptions": {
+        "outDir": "./dist",
+        "declaration": true,
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "types": [
+            "vitest/globals"
+        ]
+    }
 }
