@@ -1,4 +1,5 @@
-import { Config, Flagster } from "../src/flagster";
+import { IApi } from "../src/api/api";
+import { Config, Flagster, OnChangeListener } from "../src/flagster";
 import { ILocalStorage } from "../src/localstorage/localstorage";
 
 export class MockLocalStorage implements ILocalStorage {
@@ -20,25 +21,30 @@ export class MockLocalStorage implements ILocalStorage {
 export class FlagsterTester {
 	private flagster: Flagster | null = null;
 	private localStorage = new MockLocalStorage();
+	private api: IApi | null = null;
 
 	withLocalStorage(localStorage: MockLocalStorage) {
 		this.localStorage = localStorage;
 		return this;
 	}
 
+	withApi(api: IApi) {
+		this.api = api;
+		return this;
+	}
+
 	initFlagster(config: Config) {
-		this.flagster = new Flagster(
-			{
-				getFlags: async (environment) => {
-					expect(environment).toBe(config.environment);
-					return {
-						flag1: false,
-						flag2: true,
-					};
-				},
+		const api = this.api || {
+			getFlags: async (environment) => {
+				expect(environment).toBe(config.environment);
+				return {
+					flag1: false,
+					flag2: true,
+				};
 			},
-			this.localStorage,
-		);
+		};
+
+		this.flagster = new Flagster(api, this.localStorage);
 
 		this.flagster.init(config);
 		return this;
@@ -50,6 +56,10 @@ export class FlagsterTester {
 
 	getflags() {
 		return this.flagster?.getflags() || {};
+	}
+
+	addOnChange(callback: OnChangeListener) {
+		return this.flagster!.onChange(callback);
 	}
 
 	getFlagsFromLocalStorage() {

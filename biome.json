@@ -23,6 +23,9 @@
             "style": {
                 "useImportType": "off",
                 "noNonNullAssertion": "off"
+            },
+            "complexity": {
+                "noForEach": "off"
             }
         }
     },

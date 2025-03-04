@@ -1,18 +1,21 @@
 import { IApi } from "./api/api";
 import { ILocalStorage } from "./localstorage/localstorage";
 
+export type OnChangeListener = (
+	oldFlags: Record<string, boolean>,
+	newFlags: Record<string, boolean>,
+) => void;
+
 export type Config = {
 	environment: string;
 	defaultFlags?: Record<string, boolean>;
-	onChange?: (
-		oldFlags: Record<string, boolean>,
-		newFlags: Record<string, boolean>,
-	) => void;
+	onChange?: OnChangeListener;
 };
 
 export class Flagster {
 	private flags: Record<string, boolean> = {};
 	private config: Config | null = null;
+	private onChangeListeners: OnChangeListener[] = [];
 
 	constructor(
 		private readonly api: IApi,
@@ -29,6 +32,7 @@ export class Flagster {
 		const oldFlags = this.flags;
 		this.flags = newFlags;
 		this.config!.onChange?.(oldFlags, newFlags);
+		this.onChangeListeners.forEach((listener) => listener(oldFlags, newFlags));
 	}
 
 	private loadFromStorage() {
@@ -46,5 +50,14 @@ export class Flagster {
 
 	getflags() {
 		return this.flags;
+	}
+
+	onChange(callback: OnChangeListener) {
+		this.onChangeListeners.push(callback);
+		return () => {
+			this.onChangeListeners = this.onChangeListeners.filter(
+				(listener) => listener !== callback,
+			);
+		};
 	}
 }

@@ -157,4 +157,20 @@ describe("Flagster", () => {
 			flag3: true,
 		});
 	});
+
+	test("can add on change listener after initialization", async () => {
+		let onChangeCalled = false;
+		tester.initFlagster({
+			environment: "environemnt-id",
+			defaultFlags,
+		});
+
+		tester.addOnChange(() => {
+			onChangeCalled = true;
+		});
+
+		await tester.waitForInit();
+
+		expect(onChangeCalled).toBe(true);
+	});
 });
