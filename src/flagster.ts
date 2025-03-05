@@ -12,8 +12,32 @@ export type Config = {
 	onChange?: OnChangeListener;
 };
 
+class Flags {
+	private values: Map<string, boolean>;
+
+	constructor(flags: Record<string, boolean>) {
+		this.values = new Map(Object.entries(flags));
+	}
+
+	getAll() {
+		return Object.fromEntries(this.values);
+	}
+
+	isEquals(other: Flags) {
+		const hasDivergenteKeysCount = this.values.size !== other.values.size;
+		if (hasDivergenteKeysCount) return false;
+
+		for (const key of this.values.keys()) {
+			if (this.values.get(key) !== other.values.get(key)) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
 export class Flagster {
-	private flags: Record<string, boolean> = {};
+	private flags: Flags = new Flags({});
 	private config: Config | null = null;
 	private onChangeListeners: OnChangeListener[] = [];
 
@@ -24,32 +48,40 @@ export class Flagster {
 
 	init(config: Config) {
 		this.config = config;
+		this.flags = new Flags(config.defaultFlags || {});
 		this.loadFromStorage();
 		this.loadFromApi();
 	}
 
-	private changeFlags(newFlags: Record<string, boolean>) {
+	private changeFlags(newFlags: Flags) {
 		const oldFlags = this.flags;
-		this.flags = newFlags;
-		this.config!.onChange?.(oldFlags, newFlags);
-		this.onChangeListeners.forEach((listener) => listener(oldFlags, newFlags));
+		this.flags = new Flags(newFlags.getAll());
+		if (oldFlags.isEquals(newFlags)) return;
+		this.config!.onChange?.(oldFlags.getAll(), newFlags.getAll());
+		this.onChangeListeners.forEach((listener) =>
+			listener(oldFlags.getAll(), newFlags.getAll()),
+		);
 	}
 
 	private loadFromStorage() {
 		const savedFlags = this.localStorage.get();
-		const defaultFlags = this.config!.defaultFlags || {};
-		this.changeFlags({ ...defaultFlags, ...savedFlags });
+		this.changeFlags(this.populateWithDefaultFlags(savedFlags));
 	}
 
 	private loadFromApi() {
 		this.api.getFlags(this.config!.environment).then((flags) => {
-			this.changeFlags(flags);
-			this.localStorage.save(this.flags);
+			this.changeFlags(this.populateWithDefaultFlags(flags));
+			this.localStorage.save(this.flags.getAll());
 		});
 	}
 
+	private populateWithDefaultFlags(flags: Record<string, boolean>) {
+		const defaultFlags = this.config!.defaultFlags || {};
+		return new Flags({ ...defaultFlags, ...flags });
+	}
+
 	getflags() {
-		return this.flags;
+		return this.flags.getAll();
 	}
 
 	onChange(callback: OnChangeListener) {

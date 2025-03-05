@@ -39,33 +39,13 @@ describe("Flagster", () => {
 		});
 	});
 
-	test("on change callback is called when flags are set to default", async () => {
+	test("on change callback is called when flags are set to api values", async () => {
 		let changeCalled = false;
 		tester.initFlagster({
 			environment: "environemnt-id",
 			defaultFlags,
 			onChange(oldFlags, newFlags) {
-				if (changeCalled) return;
-				expect(oldFlags).toEqual({});
-				expect(newFlags).toEqual({
-					flag1: false,
-					flag2: false,
-				});
 				changeCalled = true;
-			},
-		});
-
-		expect(changeCalled).toBe(true);
-	});
-
-	test("on change callback is called when flags are set to api values", async () => {
-		let changeCalledTime = 0;
-		tester.initFlagster({
-			environment: "environemnt-id",
-			defaultFlags,
-			onChange(oldFlags, newFlags) {
-				changeCalledTime++;
-				if (changeCalledTime === 1) return;
 				expect(oldFlags).toEqual(defaultFlags);
 				expect(newFlags).toEqual({
 					flag1: false,
@@ -76,7 +56,7 @@ describe("Flagster", () => {
 
 		await tester.waitForInit();
 
-		expect(changeCalledTime).toBe(2);
+		expect(changeCalled).toBe(true);
 	});
 
 	test("save api flags into local storage", async () => {
@@ -122,7 +102,6 @@ describe("Flagster", () => {
 			)
 			.initFlagster({
 				environment: "environemnt-id",
-				defaultFlags,
 				onChange(oldFlags, newFlags) {
 					if (onChangeCalled) return;
 					expect(oldFlags).toEqual({});
@@ -160,10 +139,17 @@ describe("Flagster", () => {
 
 	test("can add on change listener after initialization", async () => {
 		let onChangeCalled = false;
-		tester.initFlagster({
-			environment: "environemnt-id",
-			defaultFlags,
-		});
+		tester
+			.withLocalStorage(
+				new MockLocalStorage({
+					flag1: true,
+					flag2: false,
+				}),
+			)
+			.initFlagster({
+				environment: "environemnt-id",
+				defaultFlags,
+			});
 
 		tester.addOnChange(() => {
 			onChangeCalled = true;
@@ -172,5 +158,49 @@ describe("Flagster", () => {
 		await tester.waitForInit();
 
 		expect(onChangeCalled).toBe(true);
+	});
+
+	test("DONT call on change listeners when flags are sames", async () => {
+		let onChangeCalled = false;
+		tester.withApi({
+			getFlags() {
+				return Promise.resolve({
+					flag1: false,
+					flag2: false,
+				});
+			},
+		});
+
+		tester.initFlagster({
+			environment: "environemnt-id",
+			defaultFlags,
+			onChange() {
+				onChangeCalled = true;
+			},
+		});
+
+		expect(onChangeCalled).toBe(false);
+	});
+
+	test("populate api flags with default flags when not exist in api", async () => {
+		tester
+			.withApi({
+				getFlags() {
+					return Promise.resolve({
+						flag1: true,
+					});
+				},
+			})
+			.initFlagster({
+				environment: "environemnt-id",
+				defaultFlags,
+			});
+
+		await tester.waitForInit();
+
+		expect(tester.getflags()).toEqual({
+			flag1: true,
+			flag2: false,
+		});
 	});
 });
