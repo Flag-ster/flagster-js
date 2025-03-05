@@ -1,18 +1,20 @@
 export class Flags {
-	private values: Map<string, boolean>;
+	private values: Record<string, boolean> = {};
 
 	constructor(flags: Record<string, boolean>) {
-		this.values = new Map(Object.entries(flags));
+		this.values = flags;
 	}
 
 	getAll() {
-		return Object.fromEntries(this.values);
+		return this.values;
 	}
 
 	isEquals(other: Flags) {
-		if (this.values.size !== other.values.size) return false;
-		return this.values
-			.keys()
-			.every((key) => this.values.get(key) === other.values.get(key));
+		const hasDivergentKeys =
+			Object.keys(this.values).length !== Object.keys(other.values).length;
+		if (hasDivergentKeys) return false;
+		return Object.keys(this.values).every(
+			(key) => this.values[key] === other.values[key],
+		);
 	}
 }
