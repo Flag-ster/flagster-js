@@ -1,7 +1,7 @@
 export class Flags {
-	private values: Record<string, boolean> = {};
+	private values: Record<string, boolean>;
 
-	constructor(flags: Record<string, boolean>) {
+	constructor(flags: Record<string, boolean> = {}) {
 		this.values = flags;
 	}
 

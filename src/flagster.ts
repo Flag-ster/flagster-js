@@ -14,7 +14,7 @@ export type Config = {
 };
 
 export class Flagster {
-	private flags: Flags = new Flags({});
+	private flags: Flags = new Flags();
 	private config: Config | null = null;
 	private onChangeListeners: OnChangeListener[] = [];
 
@@ -25,17 +25,16 @@ export class Flagster {
 
 	init(config: Config) {
 		this.config = config;
-		if (this.config.defaultFlags)
-			this.flags = new Flags(this.config.defaultFlags);
+		this.flags = new Flags(config.defaultFlags);
+		config.onChange && this.onChange(config.onChange);
 		this.loadFromStorage();
 		this.loadFromApi();
 	}
 
 	private changeFlags(newFlags: Flags) {
 		const oldFlags = this.flags;
-		this.flags = new Flags(newFlags.getAll());
+		this.flags = newFlags;
 		if (oldFlags.isEquals(newFlags)) return;
-		this.config!.onChange?.(oldFlags.getAll(), newFlags.getAll());
 		this.onChangeListeners.forEach((listener) =>
 			listener(oldFlags.getAll(), newFlags.getAll()),
 		);
@@ -46,11 +45,10 @@ export class Flagster {
 		this.changeFlags(this.populateWithDefaultFlags(savedFlags));
 	}
 
-	private loadFromApi() {
-		this.api.getFlags(this.config!.environment).then((flags) => {
-			this.changeFlags(this.populateWithDefaultFlags(flags));
-			this.localStorage.save(this.flags.getAll());
-		});
+	private async loadFromApi() {
+		const flags = await this.api.getFlags(this.config!.environment);
+		this.changeFlags(this.populateWithDefaultFlags(flags));
+		this.localStorage.save(this.flags.getAll());
 	}
 
 	private populateWithDefaultFlags(flags: Record<string, boolean>) {
