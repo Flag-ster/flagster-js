@@ -12,5 +12,9 @@
         "types": [
             "vitest/globals"
         ]
-    }
+    },
+    "include": [
+        "src",
+        "tests"
+    ]
 }
