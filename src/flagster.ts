@@ -31,6 +31,19 @@ export class Flagster {
 		this.loadFromApi();
 	}
 
+	getFlags() {
+		return this.flags.getAll();
+	}
+
+	onChange(callback: OnChangeListener) {
+		this.onChangeListeners.push(callback);
+		return () => {
+			this.onChangeListeners = this.onChangeListeners.filter(
+				(listener) => listener !== callback,
+			);
+		};
+	}
+
 	private changeFlags(newFlags: Flags) {
 		const oldFlags = this.flags;
 		this.flags = newFlags;
@@ -54,18 +67,5 @@ export class Flagster {
 	private populateWithDefaultFlags(flags: Record<string, boolean>) {
 		const defaultFlags = this.config!.defaultFlags || {};
 		return new Flags({ ...defaultFlags, ...flags });
-	}
-
-	getFlags() {
-		return this.flags.getAll();
-	}
-
-	onChange(callback: OnChangeListener) {
-		this.onChangeListeners.push(callback);
-		return () => {
-			this.onChangeListeners = this.onChangeListeners.filter(
-				(listener) => listener !== callback,
-			);
-		};
 	}
 }
