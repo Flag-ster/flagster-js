@@ -1,4 +1,5 @@
 import { IApi } from "./api/api";
+import { Flags } from "./flags";
 import { ILocalStorage } from "./localstorage/localstorage";
 
 export type OnChangeListener = (
@@ -12,30 +13,6 @@ export type Config = {
 	onChange?: OnChangeListener;
 };
 
-class Flags {
-	private values: Map<string, boolean>;
-
-	constructor(flags: Record<string, boolean>) {
-		this.values = new Map(Object.entries(flags));
-	}
-
-	getAll() {
-		return Object.fromEntries(this.values);
-	}
-
-	isEquals(other: Flags) {
-		const hasDivergenteKeysCount = this.values.size !== other.values.size;
-		if (hasDivergenteKeysCount) return false;
-
-		for (const key of this.values.keys()) {
-			if (this.values.get(key) !== other.values.get(key)) {
-				return false;
-			}
-		}
-		return true;
-	}
-}
-
 export class Flagster {
 	private flags: Flags = new Flags({});
 	private config: Config | null = null;
@@ -48,7 +25,8 @@ export class Flagster {
 
 	init(config: Config) {
 		this.config = config;
-		this.flags = new Flags(config.defaultFlags || {});
+		if (this.config.defaultFlags)
+			this.flags = new Flags(this.config.defaultFlags);
 		this.loadFromStorage();
 		this.loadFromApi();
 	}
