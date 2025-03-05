@@ -55,7 +55,7 @@ export class FlagsterTester {
 	}
 
 	getflags() {
-		return this.flagster?.getflags() || {};
+		return this.flagster?.getFlags() || {};
 	}
 
 	addOnChange(callback: OnChangeListener) {

@@ -56,7 +56,7 @@ export class Flagster {
 		return new Flags({ ...defaultFlags, ...flags });
 	}
 
-	getflags() {
+	getFlags() {
 		return this.flags.getAll();
 	}
 
