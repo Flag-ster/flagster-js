@@ -13,10 +13,17 @@ export type Config = {
 	onChange?: OnChangeListener;
 };
 
+export class AlreadyInitializedError extends Error {
+	constructor() {
+		super("Flagster is already initialized");
+	}
+}
+
 export class Flagster {
 	private flags: Flags = new Flags();
 	private config: Config | null = null;
 	private onChangeListeners: OnChangeListener[] = [];
+	private isInitialized = false;
 
 	constructor(
 		private readonly api: IApi,
@@ -24,6 +31,10 @@ export class Flagster {
 	) {}
 
 	init(config: Config) {
+		if (this.isInitialized) {
+			throw new AlreadyInitializedError();
+		}
+		this.isInitialized = true;
 		this.config = config;
 		this.flags = new Flags(config.defaultFlags);
 		config.onChange && this.onChange(config.onChange);
@@ -42,6 +53,10 @@ export class Flagster {
 				(listener) => listener !== callback,
 			);
 		};
+	}
+
+	isInit() {
+		return this.isInitialized;
 	}
 
 	private changeFlags(newFlags: Flags) {

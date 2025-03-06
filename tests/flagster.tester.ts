@@ -18,10 +18,19 @@ export class MockLocalStorage implements ILocalStorage {
 	}
 }
 
+class DummyApi implements IApi {
+	getFlags = async () => {
+		return {
+			flag1: false,
+			flag2: true,
+		};
+	};
+}
+
 export class FlagsterTester {
 	private flagster: Flagster | null = null;
 	private localStorage = new MockLocalStorage();
-	private api: IApi | null = null;
+	private api: IApi = new DummyApi();
 
 	withLocalStorage(localStorage: MockLocalStorage) {
 		this.localStorage = localStorage;
@@ -34,19 +43,7 @@ export class FlagsterTester {
 	}
 
 	initFlagster(config: Config) {
-		const api = this.api || {
-			getFlags: async (environment) => {
-				expect(environment).toBe(config.environment);
-				return {
-					flag1: false,
-					flag2: true,
-				};
-			},
-		};
-
-		this.flagster = new Flagster(api, this.localStorage);
-
-		this.flagster.init(config);
+		this.getFlagster().init(config);
 		return this;
 	}
 
@@ -56,6 +53,14 @@ export class FlagsterTester {
 
 	getflags() {
 		return this.flagster?.getFlags() || {};
+	}
+
+	getFlagster() {
+		if (!this.flagster) {
+			this.flagster = new Flagster(this.api, this.localStorage);
+		}
+
+		return this.flagster;
 	}
 
 	addOnChange(callback: OnChangeListener) {

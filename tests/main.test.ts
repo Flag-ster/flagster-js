@@ -1,3 +1,4 @@
+import { AlreadyInitializedError } from "../src/flagster";
 import { FlagsterTester, MockLocalStorage } from "./flagster.tester";
 
 describe("Flagster", () => {
@@ -202,5 +203,28 @@ describe("Flagster", () => {
 			flag1: true,
 			flag2: false,
 		});
+	});
+
+	test("throw error when already initialized", async () => {
+		tester.initFlagster({
+			environment: "environemnt-id",
+		});
+
+		expect(() =>
+			tester.getFlagster()?.init({
+				environment: "environemnt-id",
+			}),
+		).toThrowError(new AlreadyInitializedError());
+	});
+
+	test("isInit is false before initialization", () => {
+		expect(tester.getFlagster().isInit()).toBe(false);
+	});
+
+	test("isInit is true after initialization", () => {
+		tester.initFlagster({
+			environment: "environemnt-id",
+		});
+		expect(tester.getFlagster().isInit()).toBe(true);
 	});
 });
