@@ -7,7 +7,7 @@ export type { Config } from "./flagster";
 export { Flagster } from "./flagster";
 
 const http = new Http();
-const api = new HttpApi(http, "http://localhost:3000");
+const api = new HttpApi(http, "https://api.flagster.fr");
 const localStorage = new LocalStorage();
 
 export const flagster = () => new Flagster(api, localStorage);
