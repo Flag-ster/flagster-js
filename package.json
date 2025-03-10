@@ -4,6 +4,7 @@
 	"author": "Flagster <contact@flagster.fr>",
 	"license": "MIT",
 	"private": false,
+	"repository": "https://github.com/Flag-ster/flagster-js",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": ["dist"],
