@@ -1,5 +1,10 @@
 import { IApi } from "../src/api/api";
-import { Config, Flagster, OnChangeListener } from "../src/flagster";
+import {
+	Config,
+	Flagster,
+	FlagsterState,
+	OnChangeListener,
+} from "../src/flagster";
 import { ILocalStorage } from "../src/localstorage/localstorage";
 
 export class MockLocalStorage implements ILocalStorage {
@@ -49,6 +54,14 @@ export class FlagsterTester {
 
 	async waitForInit() {
 		await new Promise((resolve) => setTimeout(resolve, 0));
+	}
+
+	setState(state: FlagsterState) {
+		this.getFlagster().setState(state);
+	}
+
+	getState() {
+		return this.getFlagster().getState();
 	}
 
 	getflags() {

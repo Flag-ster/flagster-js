@@ -210,21 +210,34 @@ describe("Flagster", () => {
 			environment: "environemnt-id",
 		});
 
-		expect(() =>
+		await tester.waitForInit();
+
+		await expect(() =>
 			tester.getFlagster()?.init({
 				environment: "environemnt-id",
 			}),
-		).toThrowError(new AlreadyInitializedError());
+		).rejects.toThrow(AlreadyInitializedError);
 	});
 
-	test("isInit is false before initialization", () => {
+	test("isInit is false when not initialized", () => {
 		expect(tester.getFlagster().isInit()).toBe(false);
 	});
 
-	test("isInit is true after initialization", () => {
+	test("isInit is false before end of initialization", () => {
 		tester.initFlagster({
 			environment: "environemnt-id",
 		});
+
+		expect(tester.getFlagster().isInit()).toBe(false);
+	});
+
+	test("isInit is true after initialization", async () => {
+		tester.initFlagster({
+			environment: "environemnt-id",
+		});
+
+		await tester.waitForInit();
+
 		expect(tester.getFlagster().isInit()).toBe(true);
 	});
 });

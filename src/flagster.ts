@@ -19,6 +19,14 @@ export class AlreadyInitializedError extends Error {
 	}
 }
 
+export class NotInitializedError extends Error {
+	constructor() {
+		super("Flagster is not initialized");
+	}
+}
+
+export type FlagsterState = ReturnType<Flagster["getState"]>;
+
 export class Flagster {
 	private flags: Flags = new Flags();
 	private config: Config | null = null;
@@ -30,16 +38,16 @@ export class Flagster {
 		private readonly localStorage: ILocalStorage,
 	) {}
 
-	init(config: Config) {
+	async init(config: Config) {
 		if (this.isInitialized) {
 			throw new AlreadyInitializedError();
 		}
-		this.isInitialized = true;
 		this.config = config;
 		this.flags = new Flags(config.defaultFlags);
 		config.onChange && this.onChange(config.onChange);
 		this.loadFromStorage();
-		this.loadFromApi();
+		await this.loadFromApi();
+		this.isInitialized = true;
 	}
 
 	getFlags() {
@@ -57,6 +65,24 @@ export class Flagster {
 
 	isInit() {
 		return this.isInitialized;
+	}
+
+	setState(state: FlagsterState) {
+		this.isInitialized = true;
+		this.flags = new Flags(state.flags);
+		this.config = {
+			environment: state.config.environment!,
+		};
+	}
+
+	getState() {
+		if (!this.isInitialized) throw new NotInitializedError();
+		return {
+			flags: this.flags.getAll(),
+			config: {
+				environment: this.config?.environment!,
+			},
+		};
 	}
 
 	private changeFlags(newFlags: Flags) {
