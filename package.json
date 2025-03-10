@@ -1,13 +1,15 @@
 {
 	"name": "flagster",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"author": "Flagster <contact@flagster.fr>",
 	"license": "MIT",
 	"private": false,
 	"repository": "https://github.com/Flag-ster/flagster-js",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsc --project tsconfig.build.json",
 		"prepare": "yarn build",
