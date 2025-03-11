@@ -27,11 +27,13 @@ export class NotInitializedError extends Error {
 
 export type FlagsterState = ReturnType<Flagster["getState"]>;
 
+type InitState = "NOT_INITIALIZED" | "INITIALIZING" | "INITIALIZED";
+
 export class Flagster {
 	private flags: Flags = new Flags();
 	private config: Config | null = null;
 	private onChangeListeners: OnChangeListener[] = [];
-	private isInitialized = false;
+	private initState: InitState = "NOT_INITIALIZED";
 
 	constructor(
 		private readonly api: IApi,
@@ -39,15 +41,16 @@ export class Flagster {
 	) {}
 
 	async init(config: Config) {
-		if (this.isInitialized) {
+		if (!this.canInit()) {
 			throw new AlreadyInitializedError();
 		}
+		this.initState = "INITIALIZING";
 		this.config = config;
 		this.flags = new Flags(config.defaultFlags);
 		config.onChange && this.onChange(config.onChange);
 		this.loadFromStorage();
 		await this.loadFromApi();
-		this.isInitialized = true;
+		this.initState = "INITIALIZED";
 	}
 
 	getFlags() {
@@ -63,12 +66,12 @@ export class Flagster {
 		};
 	}
 
-	isInit() {
-		return this.isInitialized;
+	canInit() {
+		return this.initState === "NOT_INITIALIZED";
 	}
 
 	setState(state: FlagsterState) {
-		this.isInitialized = true;
+		this.initState = "INITIALIZED";
 		this.flags = new Flags(state.flags);
 		this.config = {
 			environment: state.config.environment!,
@@ -76,13 +79,17 @@ export class Flagster {
 	}
 
 	getState() {
-		if (!this.isInitialized) throw new NotInitializedError();
+		if (!this.isInit()) throw new NotInitializedError();
 		return {
 			flags: this.flags.getAll(),
 			config: {
 				environment: this.config?.environment!,
 			},
 		};
+	}
+
+	private isInit() {
+		return this.initState === "INITIALIZED";
 	}
 
 	private changeFlags(newFlags: Flags) {

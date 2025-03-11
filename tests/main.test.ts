@@ -205,6 +205,40 @@ describe("Flagster", () => {
 		});
 	});
 
+	test("canInit is true when not initialized", () => {
+		expect(tester.getFlagster().canInit()).toBe(true);
+	});
+
+	test("canInit is false when initializing", () => {
+		tester.initFlagster({
+			environment: "environemnt-id",
+		});
+
+		expect(tester.getFlagster().canInit()).toBe(false);
+	});
+
+	test("canInit is false when initialized", async () => {
+		tester.initFlagster({
+			environment: "environemnt-id",
+		});
+
+		await tester.waitForInit();
+
+		expect(tester.getFlagster().canInit()).toBe(false);
+	});
+
+	test("can not request init when initializing", async () => {
+		tester.initFlagster({
+			environment: "environemnt-id",
+		});
+
+		await expect(() =>
+			tester.getFlagster()?.init({
+				environment: "environemnt-id",
+			}),
+		).rejects.toThrow(AlreadyInitializedError);
+	});
+
 	test("throw error when already initialized", async () => {
 		tester.initFlagster({
 			environment: "environemnt-id",
@@ -217,27 +251,5 @@ describe("Flagster", () => {
 				environment: "environemnt-id",
 			}),
 		).rejects.toThrow(AlreadyInitializedError);
-	});
-
-	test("isInit is false when not initialized", () => {
-		expect(tester.getFlagster().isInit()).toBe(false);
-	});
-
-	test("isInit is false before end of initialization", () => {
-		tester.initFlagster({
-			environment: "environemnt-id",
-		});
-
-		expect(tester.getFlagster().isInit()).toBe(false);
-	});
-
-	test("isInit is true after initialization", async () => {
-		tester.initFlagster({
-			environment: "environemnt-id",
-		});
-
-		await tester.waitForInit();
-
-		expect(tester.getFlagster().isInit()).toBe(true);
 	});
 });

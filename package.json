@@ -7,11 +7,9 @@
 	"repository": "https://github.com/Flag-ster/flagster-js",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"scripts": {
-		"build": "tsc --project tsconfig.build.json",
+		"build": "rm -rf ./dist && tsc --project tsconfig.build.json",
 		"prepare": "yarn build",
 		"test": "vitest"
 	},
