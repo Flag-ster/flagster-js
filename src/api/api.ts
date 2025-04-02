@@ -1,3 +1,6 @@
 export type IApi = {
-	getFlags: (environment: string) => Promise<Record<string, boolean>>;
+	getFlags: (
+		environment: string,
+		identity: string,
+	) => Promise<Record<string, boolean>>;
 };

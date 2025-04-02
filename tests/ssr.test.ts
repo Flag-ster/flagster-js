@@ -44,7 +44,7 @@ describe("SSR", () => {
 
 		expect(tester.getState()).toEqual(
 			expect.objectContaining({
-				config: { environment: "environemnt-id" },
+				config: expect.objectContaining({ environment: "environemnt-id" }),
 			}),
 		);
 	});
@@ -60,6 +60,7 @@ describe("SSR", () => {
 				},
 				config: {
 					environment: "environemnt-id",
+					identity: "user-id",
 				},
 			});
 
@@ -70,6 +71,7 @@ describe("SSR", () => {
 				},
 				config: {
 					environment: "environemnt-id",
+					identity: "user-id",
 				},
 			});
 		});

@@ -1,6 +1,8 @@
 import { IApi } from "./api/api";
 import { Flags } from "./flags";
-import { ILocalStorage } from "./localstorage/localstorage";
+import { IdentityGenerator } from "./identity-generator/identity-generator";
+import { FlagsStorage } from "./flags-storage/flags-storage";
+import { IdentityStorage } from "./identity-storage/identity-storage";
 
 export type OnChangeListener = (
 	oldFlags: Record<string, boolean>,
@@ -9,8 +11,14 @@ export type OnChangeListener = (
 
 export type Config = {
 	environment: string;
+	identity?: string;
 	defaultFlags?: Record<string, boolean>;
 	onChange?: OnChangeListener;
+};
+
+type Context = {
+	environment: string;
+	identity: string;
 };
 
 export class AlreadyInitializedError extends Error {
@@ -31,13 +39,16 @@ type InitState = "NOT_INITIALIZED" | "INITIALIZING" | "INITIALIZED";
 
 export class Flagster {
 	private flags: Flags = new Flags();
+	private context: Context | null = null;
 	private config: Config | null = null;
 	private onChangeListeners: OnChangeListener[] = [];
 	private initState: InitState = "NOT_INITIALIZED";
 
 	constructor(
 		private readonly api: IApi,
-		private readonly localStorage: ILocalStorage,
+		private readonly flagsStorage: FlagsStorage,
+		private readonly identityGenerator: IdentityGenerator,
+		private readonly identityStorage: IdentityStorage,
 	) {}
 
 	async init(config: Config) {
@@ -46,8 +57,15 @@ export class Flagster {
 		}
 		this.initState = "INITIALIZING";
 		this.config = config;
+		this.context = {
+			environment: config.environment,
+			identity:
+				config.identity ||
+				this.identityStorage.get() ||
+				this.generateIdentity(),
+		};
 		this.flags = new Flags(config.defaultFlags);
-		config.onChange && this.onChange(config.onChange);
+		if (config.onChange) this.onChange(config.onChange);
 		this.loadFromStorage();
 		await this.loadFromApi();
 		this.initState = "INITIALIZED";
@@ -74,7 +92,11 @@ export class Flagster {
 		this.initState = "INITIALIZED";
 		this.flags = new Flags(state.flags);
 		this.config = {
-			environment: state.config.environment!,
+			environment: state.config.environment,
+		};
+		this.context = {
+			environment: state.config.environment,
+			identity: state.config.identity,
 		};
 	}
 
@@ -83,13 +105,21 @@ export class Flagster {
 		return {
 			flags: this.flags.getAll(),
 			config: {
-				environment: this.config?.environment!,
+				environment: this.context?.environment!,
+				identity: this.context?.identity!,
 			},
 		};
 	}
 
 	private isInit() {
 		return this.initState === "INITIALIZED";
+	}
+
+	private generateIdentity() {
+		const identity =
+			this.identityStorage.get() || this.identityGenerator.generate();
+		this.identityStorage.save(identity);
+		return identity;
 	}
 
 	private changeFlags(newFlags: Flags) {
@@ -102,14 +132,17 @@ export class Flagster {
 	}
 
 	private loadFromStorage() {
-		const savedFlags = this.localStorage.get();
+		const savedFlags = this.flagsStorage.get();
 		this.changeFlags(this.populateWithDefaultFlags(savedFlags));
 	}
 
 	private async loadFromApi() {
-		const flags = await this.api.getFlags(this.config!.environment);
+		const flags = await this.api.getFlags(
+			this.context!.environment,
+			this.context!.identity || "",
+		);
 		this.changeFlags(this.populateWithDefaultFlags(flags));
-		this.localStorage.save(this.flags.getAll());
+		this.flagsStorage.save(this.flags.getAll());
 	}
 
 	private populateWithDefaultFlags(flags: Record<string, boolean>) {
