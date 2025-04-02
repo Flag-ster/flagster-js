@@ -15,7 +15,7 @@ export type { FlagsStorage } from "./flags-storage/flags-storage";
 
 const http = new Http();
 const api = new HttpApi(http, "https://api.flagster.fr");
-const identityGenerator = new RandomIdentityGenerator();
+export const identityGenerator = new RandomIdentityGenerator();
 
 export const createFlagster = () =>
 	new Flagster(
