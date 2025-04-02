@@ -2,10 +2,10 @@ import { Http } from "./api/http";
 import { HttpApi } from "./api/http-api";
 import { Flagster } from "./flagster";
 import { RandomIdentityGenerator } from "./identity-generator/random-identity-generator";
-import { NullLocalStorage } from "./localstorage/null-localstorage";
 import { FlagsLocalStorage } from "./flags-storage/flags-localstorage";
 import { IdentityLocalStorage } from "./identity-storage/identity-localstorage";
 import { NullIdentityStorage } from "./identity-storage/null-identity-storage";
+import { NullFlagsStorage } from "./flags-storage/null-flags-storage";
 export type { IApi } from "./api/api";
 export type { Config, FlagsterState } from "./flagster";
 export { Flagster } from "./flagster";
@@ -25,7 +25,7 @@ export const createFlagster = () =>
 export const createFlagsterSSR = () =>
 	new Flagster(
 		api,
-		new NullLocalStorage(),
+		new NullFlagsStorage(),
 		identityGenerator,
 		new NullIdentityStorage(),
 	);

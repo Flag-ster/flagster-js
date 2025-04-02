@@ -1,6 +1,6 @@
 import { FlagsStorage } from "./flags-storage";
 
-export class NullLocalStorage implements FlagsStorage {
+export class NullFlagsStorage implements FlagsStorage {
 	save() {}
 	get() {
 		return {};
