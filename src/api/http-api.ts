@@ -13,9 +13,12 @@ export class HttpApi implements IApi {
 		private readonly baseUrl: string,
 	) {}
 
-	async getFlags(environment: string): Promise<Record<string, boolean>> {
+	async getFlags(
+		environment: string,
+		identity: string,
+	): Promise<Record<string, boolean>> {
 		const response = await this.http.send("GET", {
-			url: `${this.baseUrl}/eval/${environment}/flags`,
+			url: `${this.baseUrl}/eval/${environment}/flags?identity=${identity}`,
 		});
 		const flags = await response.json();
 		return flags;

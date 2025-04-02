@@ -7,14 +7,16 @@ describe("HttpApi", () => {
 			{
 				async send(method, params) {
 					expect(method).toBe("GET");
-					expect(params.url).toBe(`${baseUrl}/eval/test/flags`);
+					expect(params.url).toBe(
+						`${baseUrl}/eval/test/flags?identity=user-identity`,
+					);
 					return new Response(JSON.stringify({ flag1: true, flag2: false }));
 				},
 			},
 			baseUrl,
 		);
 
-		const flags = await api.getFlags("test");
+		const flags = await api.getFlags("test", "user-identity");
 
 		expect(flags).toEqual({
 			flag1: true,
